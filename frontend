@@ -1,1 +1,98 @@
+import streamlit as st
+from PyPDF2 import PdfReader
+import pandas as pd
+import requests
+import plotly.express as px
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
+
+API_URL = "http://127.0.0.1:8000/query"
+
+#API_URL = "http://127.0.0.1:8000"  # Backend URL
+# Sidebar
+with st.sidebar:
+    st.header("About")
+    st.write("This app compares two PDF files and provides insights.")
+  
+# Function to extract text from PDF
+def extract_text_from_pdf(pdf_file):
+    reader = PdfReader(pdf_file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
+
+# Function to analyze text
+def analyze_text(text):
+    word_count = len(text.split())
+    line_count = text.count('\n') + 1
+    return word_count, line_count
+
+# Function to compare texts
+def compare_texts(text1, text2):
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform([text1, text2])
+    similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+    return similarity
+
+# Main Streamlit app
+def main():
+    st.title("📄 AI-Powered Report Analysis Tool")
+
+    # Upload PDF files
+    st.header("Upload Reports")
+    pdf_file1 = st.file_uploader("Upload the first report", type="pdf")
+    pdf_file2 = st.file_uploader("Upload the second report", type="pdf")
+
+    if pdf_file1 and pdf_file2:
+        # Extract text from PDFs
+        text1 = extract_text_from_pdf(pdf_file1)
+        text2 = extract_text_from_pdf(pdf_file2)
+
+        # Analyze texts
+        word_count1, line_count1 = analyze_text(text1)
+        word_count2, line_count2 = analyze_text(text2)
+
+        # Display insights
+        st.header("Insights")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Report 1")
+            st.write(f"Word Count: {word_count1}")
+            st.write(f"Line Count: {line_count1}")
+        with col2:
+            st.subheader("Report 2")
+            st.write(f"Word Count: {word_count2}")
+            st.write(f"Line Count: {line_count2}")
+
+        # Compare texts
+        similarity = compare_texts(text1, text2)
+        st.subheader("Comparison")
+        st.write(f"Similarity between the two reports: {similarity:.2f}")
+
+        # Natural Language Query
+        st.header("Ask a Question")
+        query = st.text_input("Enter your query (e.g., 'Compare sales trends'):")
+        if query:
+            # Process query using AI (placeholder logic)
+            st.write(f"AI Response to: '{query}'")
+
+        # Interactive Visualizations
+        st.header("Interactive Visualizations")
+        data = {
+            "Report": ["Report 1", "Report 2"],
+            "Word Count": [word_count1, word_count2]
+        }
+        df = pd.DataFrame(data)
+        fig = px.bar(df, x="Report", y="Word Count", title="Word Count Comparison")
+        st.plotly_chart(fig)
+
+        # Double-clickable results (placeholder)
+        st.header("Source Data")
+        st.write("Double-click on the table below to view source data.")
+        st.dataframe(df)
+
+# Run the app
+if __name__ == "__main__":
+    main()
