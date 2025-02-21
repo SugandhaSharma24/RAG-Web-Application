@@ -1,46 +1,39 @@
+# FastAPI Backend
 fastapi==0.95.0
 uvicorn==0.22.0
+pydantic==1.10.7  # Adjusted to avoid conflict
+
+# OCR and Image Processing
 pytesseract==0.3.9
 pdf2image==1.16.3
 pillow==9.1.0
 opencv-python==4.5.5.64
+
+# Machine Learning & NLP
 langchain==0.0.178
 faiss-cpu==1.7.2
 huggingface-hub==0.11.1
 sentence-transformers==2.2.0
 tiktoken==0.3.0
 llama-cpp-python==0.1.24
-streamlit==1.18.0  # or the specific version you need
-requests==2.26.0 
-chromadb==0.5.0 # example other dependencies
-# For FastAPI Backend
-pydantic
-opencv-python
+transformers==4.26.1  # For RAG system
 
+# Streamlit Frontend
+streamlit==1.18.0
+plotly==5.5.0
+scikit-learn==1.0.2
+PyPDF2==1.26.0
 
-# For Streamlit Frontend
-streamlit
-plotly
-scikit-learn
-PyPDF2
-
-# Visualization dependencies
+# Visualization
 matplotlib==3.6.3
 
-# Text processing and regular expressions
+# Text Processing & Regex
 regex==2023.5.5
 
-# FastAPI utilities and validation
-pydantic==1.10.7
-
-# RAG system dependencies
-transformers==4.26.1
-
-# Testing dependencies (for pytest and HTTP client)
+# Testing Dependencies
 httpx==0.23.1
 pytest==7.2.2
 pytest-asyncio==0.18.3
 
-# Optional: If you're using PDF text extraction in the backend (like for extracting text from PDFs)
+# Optional PDF Text Extraction
 PyMuPDF==1.21.1  # For extracting text from PDFs
-
