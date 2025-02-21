@@ -10,5 +10,9 @@ Before running the application, make sure to install the necessary system depend
    sudo apt-get install python3-distutils
 2.   Install Python dependencies:
      pip install -r requirements.txt
-3. Run
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+d. Run FastAPI :
+You need to  run it separately. Make sure to use uvicorn to start the FastAPI server.
+
+Example:
+uvicorn main:app --reload  # Replace 'main' with your FastAPI script name
+This will start FastAPI on http://127.0.0.1:8000.
