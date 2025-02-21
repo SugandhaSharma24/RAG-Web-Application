@@ -168,7 +168,7 @@ def query_rag_system(query: str, db_path="./chroma_db", top_k=3):
 
 # Example usage
 if __name__ == "__main__":
-    pdf_path = "/content/sample_data/testfile.pdf"
+    pdf_path = "/content/sample_data/test1.pdf"
     db = process_pdf(pdf_path)
 
     query = "can you extract graph of five-year average roce?"
@@ -194,3 +194,214 @@ def ask_questions():
 
 # Call the function to start the loop
 ask_questions()
+
+!pip install --force-reinstall pymupdf
+
+import fitz  # PyMuPDF
+import io
+from PIL import Image
+
+# Open the PDF file
+pdf_path = "/content/sample_data/test2.pdf"
+doc = fitz.open(pdf_path)
+
+# Loop through each page
+for page_num in range(len(doc)):
+    page = doc[page_num]
+    images = page.get_images(full=True)  # Extract all images
+
+    for img_index, img in enumerate(images):
+        xref = img[0]  # Get the image reference
+        base_image = doc.extract_image(xref)  # Extract image bytes
+        image_bytes = base_image["image"]  # Get the image bytes
+        img_format = base_image["ext"]  # Get the image format (PNG, JPEG)
+
+        # Save the image
+        image = Image.open(io.BytesIO(image_bytes))
+        image.save(f"page_{page_num+1}_img_{img_index+1}.{img_format}")
+
+        print(f"Saved: page_{page_num+1}_img_{img_index+1}.{img_format}")
+
+import fitz  # PyMuPDF
+import io
+import os # import the os module
+from PIL import Image
+
+pdf_path = "/content/sample_data/test2.pdf"
+doc = fitz.open(pdf_path)
+
+image_data = []
+
+for page_num in range(len(doc)):
+    page = doc[page_num]
+    images = page.get_images(full=True)
+
+    for img_index, img in enumerate(images):
+        xref = img[0]
+        base_image = doc.extract_image(xref)
+        image_bytes = base_image["image"]
+        img_format = base_image["ext"]
+
+        # Create the images directory if it doesn't exist
+        img_dir = "/content/sample_data/images"
+        os.makedirs(img_dir, exist_ok=True) # create the directory if it doesn't exist
+
+        # Save the image for reference, include the file extension in the path
+        img_path = os.path.join(img_dir, f"page_{page_num+1}_img_{img_index+1}.{img_format}")
+        img_obj = Image.open(io.BytesIO(image_bytes))
+        img_obj.save(img_path)
+
+        # Store metadata for later retrieval
+        image_data.append({
+            "page": page_num + 1,
+            "img_path": img_path
+        })
+
+print(f"Extracted {len(image_data)} images from the PDF.")
+
+from sentence_transformers import SentenceTransformer
+import torch
+from PIL import Image
+
+# Load a pre-trained CLIP model
+model = SentenceTransformer("clip-ViT-B-32")
+
+image_embeddings = []
+
+for img in image_data:
+    image = Image.open(img["img_path"]).convert("RGB")
+    img_embedding = model.encode(image, convert_to_tensor=True).tolist()
+
+    # Store embedding along with metadata
+    image_embeddings.append({
+        "page": img["page"],
+        "img_path": img["img_path"],
+        "embedding": img_embedding
+    })
+
+print("Converted images to embeddings.")
+
+import chromadb
+
+# Initialize ChromaDB
+client = chromadb.PersistentClient(path="./chroma_db")
+collection = client.get_or_create_collection("pdf_images")
+
+# Insert images into the database
+for img in image_embeddings:
+    collection.add(
+        ids=[img["img_path"]],
+        embeddings=[img["embedding"]],
+        metadatas=[{"page": img["page"], "img_path": img["img_path"]}]
+    )
+
+print("Stored image embeddings in ChromaDB.")
+
+query_text = "graph showing Balanced, Diversified, Disciplined Production Growth"
+
+# Convert query to an embedding
+query_embedding = model.encode(query_text, convert_to_tensor=True).tolist()
+
+# Search in ChromaDB
+results = collection.query(
+    query_embeddings=[query_embedding],
+    n_results=3  # Get top 3 matches
+)
+
+# Print results
+for i, result in enumerate(results["metadatas"][0]):
+    print(f"Match {i+1}: Page {result['page']}, Image Path: {result['img_path']}")
+
+query_image_path = "/content/sample_data/img.png"
+
+# Convert the query image to an embedding
+query_image = Image.open(query_image_path).convert("RGB")
+query_embedding = model.encode(query_image, convert_to_tensor=True).tolist()
+
+# Search in ChromaDB
+results = collection.query(
+    query_embeddings=[query_embedding],
+    n_results=3
+)
+
+# Print results
+for result in results["metadatas"][0]:
+    print(f"Similar Image Found on Page {result['page']}, Image Path: {result['img_path']}")
+
+import matplotlib.pyplot as plt
+from PIL import Image
+
+query_text = "graph showing Balanced, Diversified, Disciplined Production Growth"
+
+# Convert query to embedding
+query_embedding = model.encode(query_text, convert_to_tensor=True).tolist()
+
+# Query ChromaDB for the most relevant images
+results = collection.query(
+    query_embeddings=[query_embedding],
+    n_results=3  # Get top 3 results
+)
+
+# Display the retrieved images
+for i, result in enumerate(results["metadatas"][0]):
+    img_path = result["img_path"]  # Get image path from metadata
+    page_num = result["page"]
+
+    # Open and display the image
+    img = Image.open(img_path)
+
+    plt.figure(figsize=(5, 5))
+    plt.imshow(img)
+    plt.axis("off")  # Hide axes
+    plt.title(f"Match {i+1}: Page {page_num}")
+    plt.show()
+
+!pip install pdfplumber pandas
+
+import pdfplumber
+import pandas as pd
+
+pdf_path = "/content/sample_data/tableimg.pdf"
+
+# Open the PDF file
+with pdfplumber.open(pdf_path) as pdf:
+    for page_num, page in enumerate(pdf.pages):
+        tables = page.extract_tables()  # Extract tables
+
+        for table_index, table in enumerate(tables):
+            df = pd.DataFrame(table)  # Convert to Pandas DataFrame
+            print(f"Page {page_num+1}, Table {table_index+1}")
+            print(df, "\n")
+
+            # Save to CSV
+            df.to_csv(f"page_{page_num+1}_table_{table_index+1}.csv", index=False)
+
+!pip install opencv-python numpy scikit-image
+
+import cv2
+import numpy as np
+from skimage.metrics import structural_similarity as ssim
+
+img1_path = "/content/sample_data/images/page_12_img_1.jpeg"
+img2_path = "/content/sample_data/images/page_9_img_1.jpeg"
+
+
+def compare_images(img1_path, img2_path):
+    # Read images in grayscale
+    img1 = cv2.imread(img1_path, cv2.IMREAD_GRAYSCALE)
+    img2 = cv2.imread(img2_path, cv2.IMREAD_GRAYSCALE)
+
+    # Resize images to the same shape (if needed)
+    img2 = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
+
+    # Compute SSIM
+    score, diff = ssim(img1, img2, full=True)
+    return score
+
+# Define the image lists (replace with actual paths)
+images_report_1 = [img1_path]  # Assuming img1_path is the first image of report 1
+images_report_2 = [img2_path]  # Assuming img2_path is the first image of report 2
+
+# Compare the first graphs from both reports
+similarity_score = compare_images(images_report_1[0], images_report_2[0])
+print(f"SSIM Similarity Score: {similarity_score:.2f}")
