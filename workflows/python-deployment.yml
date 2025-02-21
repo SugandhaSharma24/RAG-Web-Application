@@ -1,0 +1,38 @@
+name: Python Application Deployment
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use an Ubuntu environment for the job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3  # Checkout the repository code
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'  # Use Python 3.12 or any other version you prefer
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-distutils  # Install distutils
+          
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install --upgrade setuptools
+          pip install -r requirements.txt  # Install your project dependencies
+
+      - name: Run tests or deploy (optional)
+        run: |
+          # If you have tests or deployment steps, add them here
+          pytest  # Or any other command you wish to run
