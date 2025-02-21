@@ -14,7 +14,7 @@ llama-cpp-python==0.1.24
 streamlit==1.17.1  # or the specific version you need
 requests==2.26.0 
 # Frontend dependencies (Streamlit)
-streamlit==1.19.0
+streamlit==1.15.0
 
 # Backend dependencies (FastAPI)
 fastapi==0.95.1
