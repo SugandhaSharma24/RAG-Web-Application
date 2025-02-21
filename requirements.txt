@@ -4,7 +4,6 @@ uvicorn==0.22.0
 pydantic==1.10.7  # Adjusted to avoid conflict
 setuptools==67.0.0  # Specify a compatible version of setuptools
 pip==24.0
-python3-distutils==<appropriate version if available>
 # Add other dependencies here
 # This can be added if using Ubuntu/Debian
 
