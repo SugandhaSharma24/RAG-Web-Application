@@ -11,3 +11,30 @@ huggingface-hub==0.11.1
 sentence-transformers==2.2.0
 tiktoken==0.3.0
 llama-cpp-python==0.1.24
+requests==2.26.0 
+# Frontend dependencies (Streamlit)
+streamlit==1.19.0
+
+# Visualization dependencies
+matplotlib==3.6.3
+numpy==1.24.1
+
+# Text processing and regular expressions
+regex==2023.1.10
+
+# FastAPI utilities and validation
+pydantic==1.10.7
+
+# RAG system dependencies
+# These could include libraries for handling embeddings, vector databases, and retrieval systems
+sentence-transformers==2.2.0
+transformers==4.26.1
+
+# Testing dependencies (for pytest and HTTP client)
+httpx==0.23.1
+pytest==7.2.2
+pytest-asyncio==0.18.3
+
+# Optional: If you're using PDF text extraction in the backend (like for extracting text from PDFs)
+PyMuPDF==1.21.1  # For extracting text from PDFs
+
