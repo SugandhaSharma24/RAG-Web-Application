@@ -1,98 +1,85 @@
 import streamlit as st
-from PyPDF2 import PdfReader
-import pandas as pd
 import requests
-import plotly.express as px
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from collections import Counter
+import re
+
+# FastAPI backend URL
+API_URL = "http://localhost:8000"  # Update with your FastAPI URL
+
+# Sidebar title and description
+st.sidebar.title("Welcome to the PDF OCR & RAG System")
+st.sidebar.write("""
+This application allows you to upload PDF files, extract their content, and query it using a retrieval-augmented generation (RAG) system. 
+Just upload a PDF, ask a question, and get relevant information extracted from the document.
+""")
+
+# Function to upload PDF to FastAPI backend
+def upload_pdf(file):
+    url = f"{API_URL}/upload_pdf"
+    files = {"file": file}
+    response = requests.post(url, files=files)
+    
+    if response.status_code == 200:
+        return response.json()  # Returns filename and success message
+    else:
+        st.error(f"Failed to upload PDF: {response.text}")
+        return None
+
+# Function to query the RAG system via FastAPI backend
+def query_rag_system(query):
+    url = f"{API_URL}/query"
+    payload = {"query": query}
+    response = requests.post(url, json=payload)
+    
+    if response.status_code == 200:
+        return response.json()["response"]  # Returns query results
+    else:
+        st.error(f"Error during query: {response.text}")
+        return None
+
+# Streamlit UI elements
+st.title("PDF OCR & RAG System")
+
+# File upload
+uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
 
-API_URL = "http://127.0.0.1:8000/query"
+# Check if file is uploaded and process it
+if uploaded_file is not None:
+    st.write(f"File uploaded: {uploaded_file.name}")
 
-#API_URL = "http://127.0.0.1:8000"  # Backend URL
-# Sidebar
-with st.sidebar:
-    st.header("About")
-    st.write("This app compares two PDF files and provides insights.")
-  
-# Function to extract text from PDF
-def extract_text_from_pdf(pdf_file):
-    reader = PdfReader(pdf_file)
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text()
-    return text
+    # Upload the PDF file to the FastAPI backend
+    upload_response = upload_pdf(uploaded_file)
+    if upload_response:
+        st.success(upload_response["message"])
 
-# Function to analyze text
-def analyze_text(text):
-    word_count = len(text.split())
-    line_count = text.count('\n') + 1
-    return word_count, line_count
+    # Query input for the user
+    query = st.text_input("Ask a question about the PDF:")
 
-# Function to compare texts
-def compare_texts(text1, text2):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([text1, text2])
-    similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-    return similarity
+    # Initialize session state for query results if not already initialized
+    if "query_results" not in st.session_state:
+        st.session_state.query_results = None  # Start with no query results
 
-# Main Streamlit app
-def main():
-    st.title("📄 AI-Powered Report Analysis Tool")
-
-    # Upload PDF files
-    st.header("Upload Reports")
-    pdf_file1 = st.file_uploader("Upload the first report", type="pdf")
-    pdf_file2 = st.file_uploader("Upload the second report", type="pdf")
-
-    if pdf_file1 and pdf_file2:
-        # Extract text from PDFs
-        text1 = extract_text_from_pdf(pdf_file1)
-        text2 = extract_text_from_pdf(pdf_file2)
-
-        # Analyze texts
-        word_count1, line_count1 = analyze_text(text1)
-        word_count2, line_count2 = analyze_text(text2)
-
-        # Display insights
-        st.header("Insights")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Report 1")
-            st.write(f"Word Count: {word_count1}")
-            st.write(f"Line Count: {line_count1}")
-        with col2:
-            st.subheader("Report 2")
-            st.write(f"Word Count: {word_count2}")
-            st.write(f"Line Count: {line_count2}")
-
-        # Compare texts
-        similarity = compare_texts(text1, text2)
-        st.subheader("Comparison")
-        st.write(f"Similarity between the two reports: {similarity:.2f}")
-
-        # Natural Language Query
-        st.header("Ask a Question")
-        query = st.text_input("Enter your query (e.g., 'Compare sales trends'):")
+    # Button to trigger query processing
+    if st.button("Submit Query"):
+        # Only process if the query is not empty
         if query:
-            # Process query using AI (placeholder logic)
-            st.write(f"AI Response to: '{query}'")
+            # Query the RAG system via FastAPI
+            query_results = query_rag_system(query)
+            
+            if query_results:
+                # Store the results in session state
+                st.session_state.query_results = query_results
+                st.write("Results:")
+                for result in query_results:
+                    st.write(f"Page {result['page']}: {result['text']}")
+            else:
+                st.write("No relevant information found.")
+        else:
+            st.warning("Please enter a query.")
+ 
+       
 
-        # Interactive Visualizations
-        st.header("Interactive Visualizations")
-        data = {
-            "Report": ["Report 1", "Report 2"],
-            "Word Count": [word_count1, word_count2]
-        }
-        df = pd.DataFrame(data)
-        fig = px.bar(df, x="Report", y="Word Count", title="Word Count Comparison")
-        st.plotly_chart(fig)
 
-        # Double-clickable results (placeholder)
-        st.header("Source Data")
-        st.write("Double-click on the table below to view source data.")
-        st.dataframe(df)
-
-# Run the app
-if __name__ == "__main__":
-    main()
