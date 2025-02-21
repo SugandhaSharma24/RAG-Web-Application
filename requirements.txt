@@ -11,7 +11,7 @@ huggingface-hub==0.11.1
 sentence-transformers==2.2.0
 tiktoken==0.3.0
 llama-cpp-python==0.1.24
-streamlit==1.17.1  # or the specific version you need
+streamlit==1.18.0  # or the specific version you need
 requests==2.26.0   # example other dependencies
 # For FastAPI Backend
 fastapi
