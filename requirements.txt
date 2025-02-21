@@ -1,44 +1,13 @@
-# FastAPI Backend
 fastapi==0.95.0
 uvicorn==0.22.0
-pydantic==1.10.7  # Adjusted to avoid conflict
-setuptools==67.0.0  # Specify a compatible version of setuptools
-pip==24.0
-# Add other dependencies here
-# This can be added if using Ubuntu/Debian
-
-
-# OCR and Image Processing
 pytesseract==0.3.9
 pdf2image==1.16.3
 pillow==9.1.0
 opencv-python==4.5.5.64
-
-# Machine Learning & NLP
 langchain==0.0.178
+chromadb==0.2.3
 faiss-cpu==1.7.2
 huggingface-hub==0.11.1
 sentence-transformers==2.2.0
 tiktoken==0.3.0
 llama-cpp-python==0.1.24
-transformers==4.26.1  # For RAG system
-
-# Streamlit Frontend
-streamlit==1.18.0
-plotly==5.5.0
-scikit-learn==1.0.2
-PyPDF2==1.26.0
-
-# Visualization
-matplotlib==3.6.3
-
-# Text Processing & Regex
-regex==2023.5.5
-
-# Testing Dependencies
-httpx==0.23.1
-pytest==7.2.2
-pytest-asyncio==0.18.3
-
-# Optional PDF Text Extraction
-PyMuPDF==1.21.1  # For extracting text from PDFs
