@@ -4,12 +4,13 @@ import cv2
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 import streamlit as st
 import tempfile
+
 
 
 class PDFImageOCRPipeline:
