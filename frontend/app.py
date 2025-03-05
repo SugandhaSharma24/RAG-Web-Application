@@ -6,7 +6,7 @@ from collections import Counter
 import re
 
 # FastAPI backend URL
-API_URL = "http://localhost:8000"  # Update with your FastAPI URL
+API_URL = "http://127.0.0.1:8000"  # Update with your FastAPI URL
 
 # Sidebar title and description
 st.sidebar.title("Welcome to the PDF OCR & RAG System")
